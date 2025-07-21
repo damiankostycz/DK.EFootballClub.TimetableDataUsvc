@@ -20,7 +20,7 @@ public class MongoDbService
         return await _timetables.Find(_ => true).ToListAsync();
     }
 
-    private async Task<Timetable?> GetTimetableByIdAsync(string id)
+    public async Task<Timetable?> GetTimetableByIdAsync(string id)
     {
         var filter = Builders<Timetable>.Filter.Eq("_id", ObjectId.Parse(id));
         return await _timetables.Find(filter).FirstOrDefaultAsync();

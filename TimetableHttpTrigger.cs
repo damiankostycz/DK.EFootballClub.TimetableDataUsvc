@@ -34,6 +34,38 @@ public class TimetableHttpTrigger(ILoggerFactory loggerFactory)
             return response;
         }
     }
+    
+    [Function("GetTimetableById")]
+    public async Task<HttpResponseData> GetTimetableById(
+        [HttpTrigger(AuthorizationLevel.Function, "get", Route = "timetables/{id}")] HttpRequestData req,
+        string id)
+    {
+        var response = req.CreateResponse();
+        try
+        {
+            var db = new MongoDbService(_dbConnectionString, _dbName);
+            Timetable timetable = await db.GetTimetableByIdAsync(id);
+
+            if (timetable == null)
+            {
+                response.StatusCode = HttpStatusCode.NotFound;
+                await response.WriteStringAsync($"Timetable with ID '{id}' not found.");
+                return response;
+            }
+
+            response.StatusCode = HttpStatusCode.OK;
+            await response.WriteAsJsonAsync(timetable);
+            return response;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error fetching timetable with ID {Id}", id);
+            response.StatusCode = HttpStatusCode.InternalServerError;
+            await response.WriteStringAsync("Internal server error");
+            return response;
+        }
+    }
+
 
     [Function("CreateTimetable")]
     public async Task<HttpResponseData> CreateTimetable(
